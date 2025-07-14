@@ -1,27 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const Blog = () => {
-  const [blogs, setBlogs] = useState([
-    {
-      id: 1,
-      title: "Discover the Beauty of Nature",
-      description:
-        "Explore stunning landscapes, tranquil forests, and breathtaking views.",
-      bannerURL: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    },
-    {
-      id: 2,
-      title: "Mastering Web Development",
-      description:
-        "Learn modern tools, frameworks, and best practices in frontend development.",
-      bannerURL: "https://images.unsplash.com/photo-1517430816045-df4b7de01f66",
-    },
-  ]);
+  const [blog, setBlogs] = useState([]);
+  const [realtime, setrealtime] = useState(false);
+  useEffect(() => {
+    const getAllBlog = async () => {
+      try {
+        const allblog = await axios.get("http://localhost:4000/getallblog");
+        setBlogs(allblog?.data?.data);
+      } catch (error) {
+        console.log("error from get all blog", error);
+      }
+    };
+    getAllBlog();
+  }, [realtime]);
 
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    banner: null,
+    blogTitle: "",
+    blogDescrioption: "",
+    image: null,
   });
 
   const handleChange = (e) => {
@@ -32,15 +30,20 @@ const Blog = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newBlog = {
-      id: Date.now(),
-      ...formData,
-      bannerURL: formData.banner ? URL.createObjectURL(formData.banner) : "",
-    };
-    setBlogs([newBlog, ...blogs]);
-    setFormData({ title: "", description: "", banner: null });
+    const fromdata = new FormData();
+    fromdata.append("blogTitle", formData.blogTitle);
+    fromdata.append("blogDescrioption", formData.blogDescrioption);
+    fromdata.append("image", formData.image);
+
+    const response = await axios.post(
+      "http://localhost:4000/create-blog",
+      fromdata
+    );
+    if (response.status == 201) {
+      setrealtime(!realtime);
+    }
   };
 
   return (
@@ -51,24 +54,24 @@ const Blog = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            name="title"
+            name="blogTitle"
             placeholder="Blog Title"
-            value={formData.title}
+            value={formData.blogTitle}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded-xl focus:ring-2 focus:ring-blue-400"
             required
           />
           <textarea
-            name="description"
+            name="blogDescrioption"
             placeholder="Blog Description"
-            value={formData.description}
+            value={formData.blogDescrioption}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded-xl focus:ring-2 focus:ring-blue-400"
             required
           />
           <input
             type="file"
-            name="banner"
+            name="image"
             accept="image/*"
             onChange={handleChange}
             className="w-full"
@@ -84,7 +87,7 @@ const Blog = () => {
 
       {/* Blog Section - 70% */}
       <div className="w-full sm:w-[70%] grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {blogs.map((blog) => (
+        {blog?.map((blog) => (
           <div
             key={blog.id}
             className="bg-white rounded-xl shadow-md overflow-hidden relative"
@@ -95,18 +98,17 @@ const Blog = () => {
             </button>
 
             {/* Banner */}
-            {blog.bannerURL && (
-              <img
-                src={blog.bannerURL}
-                alt="Banner"
-                className="w-full h-40 object-cover"
-              />
-            )}
+
+            <img
+              src={blog.image}
+              alt="Banner"
+              className="w-full h-80 object-cover"
+            />
 
             {/* Title & Description */}
             <div className="p-4">
-              <h3 className="text-lg font-semibold">{blog.title}</h3>
-              <p className="text-gray-600 mt-2">{blog.description}</p>
+              <h3 className="text-lg font-semibold">{blog.blogTitle}</h3>
+              <p className="text-gray-600 mt-2">{blog.blogDescrioption}</p>
             </div>
           </div>
         ))}

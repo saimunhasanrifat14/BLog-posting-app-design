@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router";
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,9 +19,24 @@ const Signup = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitted Data:", formData);
+
+    const userData = {
+      userName: "taufik",
+      email: "tafik@example.com",
+      password: "securePassword123",
+      phoneNumber: 1234456,
+    };
+
+    const response = await axios.post(
+      "http://localhost:4000/registration",
+      userData
+    );
+    if (response.status == 201) {
+      navigate("/login");
+    }
+
     // You can add Firebase or API logic here
   };
 

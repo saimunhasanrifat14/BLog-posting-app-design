@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
@@ -14,9 +17,18 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login Data:", loginData);
+    const response = await axios.post("http://localhost:4000/login", {
+      email: "tafik@example.com",
+      password: "securePassword123",
+      //   "phoneNumber": 1234456,
+    });
+    console.log(response);
+
+    if (response.status == 200) {
+      navigate("/blog");
+    }
     // You can add Firebase or API logic here
   };
 
@@ -56,5 +68,3 @@ const Login = () => {
 };
 
 export default Login;
-
-
